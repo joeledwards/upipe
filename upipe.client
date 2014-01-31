@@ -1,0 +1,6 @@
+# Upipe Config File
+type = CLIENT
+port = 8000
+ip   = 127.0.0.1
+pipe = 5330:136.177.120.19:5330:UDP
+pipe = 6330:136.177.120.19:6330:UDP

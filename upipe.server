@@ -1,0 +1,4 @@
+# Upipe Config File
+type = SERVER
+port = 8000
+ip   = 127.0.0.1
