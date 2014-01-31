@@ -180,6 +180,13 @@ def parse_config(config_file):
 # === Counter Class /*{{{*/
 # A simple counter class that keeps track of state
 # methods ending in _t are thread safe
+def thread_safe(func):
+    def lock_func(self, *args):
+        self.lock.acquire()
+        func(self, *args)
+        self.lock.release()
+    return lock_func
+
 class Counter(object):
     def __init__(self, value=0, stride=1):
         self.stride = stride
@@ -187,43 +194,65 @@ class Counter(object):
         self.lock = threading.Lock()
         self.reset()
 
-    def reset_t(self): self.lock.acquire(); self.reset(); self.lock.release()
     def reset(self):
         self.value = self.original
 
-    def set_value_t(self, value): self.lock.acquire(); self.set_value(); self.lock.release()
+    @thread_safe
+    def reset_t(self):
+        self.reset()
+
     def set_value(self, value):
         self.value = value
 
-    def set_stride_t(self, value): self.lock.acquire(); self.set_stride(); self.lock.release()
+    @thread_safe
+    def set_value_t(self, value):
+        self.set_value(value)
+
     def set_stride(self, stride):
         self.stride = stride
 
+    @thread_safe
+    def set_stride_t(self, stride):
+        self.set_stride(stride)
+
     # Pre increment
-    def inc_t(self): self.lock.acquire(); self.inc(); self.lock.release()
     def inc(self):
         self.value += self.stride
         return self.value
 
+    @thread_safe
+    def inc_t(self):
+        return self.inc()
+
     # Pre decrement
-    def dec_t(self): self.lock.acquire(); self.dec(); self.lock.release()
     def dec(self):
         self.value -= self.stride
         return self.value
 
+    @thread_safe
+    def dec_t(self):
+        return self.dec()
+
     # Post increment
-    def inc_p_t(self): self.lock.acquire(); self.inc_p(); self.lock.release()
     def inc_p(self):
         temp = self.value
         self.value += self.stride
         return temp
 
+    @thread_safe
+    def inc_p_t(self):
+        return self.inc_p()
+
     # Post decrement
-    def dec_p_t(self): self.lock.acquire(); self.dec_p(); self.lock.release()
     def dec_p(self):
         temp = self.value
         self.value -= self.stride
         return temp
+
+    @thread_safe
+    def dec_p_t(self):
+        return self.dec_p()
+
 #/*}}}*/
 
 # === Pipe Classes /*{{{*/
